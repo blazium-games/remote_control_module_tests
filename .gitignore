@@ -1,0 +1,13 @@
+.godot/
+*.log
+*.log.err
+.vs/
+.idea/
+tmp/
+results/
+*.exe
+editor_smoke.log*
+test_run_out.txt
+
+# Multiuser Editor access list (local credentials, do not commit).
+.multiuser_access_list.json
