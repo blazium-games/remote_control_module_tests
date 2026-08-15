@@ -2,7 +2,7 @@ extends AutoworkTest
 
 const Helpers = preload("res://tests/http_helpers.gd")
 
-func after_each():
+func _after_each():
 	if RemoteControlServer.is_started():
 		RemoteControlServer.stop()
 
@@ -16,13 +16,13 @@ func test_006_eval_luau_expression_and_statement():
 	RemoteControlServer.allow_eval = true
 	var port = RemoteControlServer.get_port()
 
-	var status = Helpers.request(HTTPClient.METHOD_GET, "http://127.0.0.1:%d/v1/status" % port)
+	var status = await Helpers.request(HTTPClient.METHOD_GET, "http://127.0.0.1:%d/v1/status" % port)
 	assert_eq(status.get("code", 0), 200)
 	var status_body = JSON.parse_string(status.get("body", "{}"))
 	assert_true(status_body.get("luau_eval_available", false), "status reports luau_eval_available")
 
 	var expr_body = JSON.stringify({"expression": "1 + 1", "language": "luau"})
-	var expr_res = Helpers.request(
+	var expr_res = await Helpers.request(
 		HTTPClient.METHOD_POST,
 		"http://127.0.0.1:%d/v1/eval" % port,
 		PackedStringArray(["Content-Type: application/json"]),
@@ -35,7 +35,7 @@ func test_006_eval_luau_expression_and_statement():
 	assert_eq(int(expr_json.get("result", -1)), 2)
 
 	var stmt_body = JSON.stringify({"expression": "local x = 3; return x", "language": "luau"})
-	var stmt_res = Helpers.request(
+	var stmt_res = await Helpers.request(
 		HTTPClient.METHOD_POST,
 		"http://127.0.0.1:%d/v1/eval" % port,
 		PackedStringArray(["Content-Type: application/json"]),

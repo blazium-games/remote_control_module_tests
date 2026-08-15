@@ -2,7 +2,7 @@ extends AutoworkTest
 
 const Helpers = preload("res://tests/http_helpers.gd")
 
-func after_each():
+func _after_each():
 	if RemoteControlServer.is_started():
 		RemoteControlServer.stop()
 
@@ -16,7 +16,7 @@ func test_004_command_list():
 	assert_true(listed.size() >= 3, "builtins registered")
 
 	var port = RemoteControlServer.get_port()
-	var resp = Helpers.request(HTTPClient.METHOD_GET, "http://127.0.0.1:%d/v1/commands" % port)
+	var resp = await Helpers.request(HTTPClient.METHOD_GET, "http://127.0.0.1:%d/v1/commands" % port)
 	assert_eq(resp.get("code", 0), 200)
 	var payload = JSON.parse_string(resp.get("body", "{}"))
 	assert_true(payload.get("ok", false))

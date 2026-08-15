@@ -15,10 +15,14 @@ static func request(method: int, url: String, headers: PackedStringArray = Packe
 	if err != OK:
 		return {"code": 0, "body": "", "error": "connect failed: %s" % err}
 
+	var tree := Engine.get_main_loop() as SceneTree
 	var deadline := Time.get_ticks_msec() + 5000
 	while client.get_status() == HTTPClient.STATUS_CONNECTING or client.get_status() == HTTPClient.STATUS_RESOLVING:
 		client.poll()
-		OS.delay_msec(10)
+		if tree:
+			await tree.process_frame
+		else:
+			OS.delay_msec(10)
 		if Time.get_ticks_msec() > deadline:
 			return {"code": 0, "body": "", "error": "connect timeout"}
 
@@ -29,7 +33,10 @@ static func request(method: int, url: String, headers: PackedStringArray = Packe
 	deadline = Time.get_ticks_msec() + 5000
 	while client.get_status() == HTTPClient.STATUS_REQUESTING:
 		client.poll()
-		OS.delay_msec(10)
+		if tree:
+			await tree.process_frame
+		else:
+			OS.delay_msec(10)
 		if Time.get_ticks_msec() > deadline:
 			return {"code": 0, "body": "", "error": "request timeout"}
 
@@ -40,8 +47,9 @@ static func request(method: int, url: String, headers: PackedStringArray = Packe
 		var chunk := client.read_response_body_chunk()
 		if chunk.size() > 0:
 			response.append_array(chunk)
+		elif tree:
+			await tree.process_frame
 		else:
 			OS.delay_msec(5)
 
-	# Pump main loop so deferred /v1/exec handlers can complete when needed.
 	return {"code": code, "body": response.get_string_from_utf8(), "error": ""}

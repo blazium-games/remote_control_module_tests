@@ -1,6 +1,6 @@
 extends AutoworkTest
 
-func after_each():
+func _after_each():
 	if ClassDB.class_exists("RemoteControlServer") and RemoteControlServer.is_started():
 		RemoteControlServer.stop()
 

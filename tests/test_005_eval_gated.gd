@@ -2,7 +2,7 @@ extends AutoworkTest
 
 const Helpers = preload("res://tests/http_helpers.gd")
 
-func after_each():
+func _after_each():
 	if RemoteControlServer.is_started():
 		RemoteControlServer.stop()
 
@@ -14,7 +14,7 @@ func test_005_eval_gated_and_allowed():
 	var port = RemoteControlServer.get_port()
 
 	var body = JSON.stringify({"expression": "2 + 2"})
-	var denied = Helpers.request(
+	var denied = await Helpers.request(
 		HTTPClient.METHOD_POST,
 		"http://127.0.0.1:%d/v1/eval" % port,
 		PackedStringArray(["Content-Type: application/json"]),
@@ -29,7 +29,7 @@ func test_005_eval_gated_and_allowed():
 	assert_eq(allowed.get("language", ""), "gdscript")
 
 	var gd_body = JSON.stringify({"expression": "3 + 1", "language": "gdscript"})
-	var gd_http = Helpers.request(
+	var gd_http = await Helpers.request(
 		HTTPClient.METHOD_POST,
 		"http://127.0.0.1:%d/v1/eval" % port,
 		PackedStringArray(["Content-Type: application/json"]),
